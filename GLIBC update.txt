@@ -1,0 +1,88 @@
+
+
+下载
+wget http://ftp.gnu.org/gnu/glibc/glibc-2.27.tar.gz
+
+
+解压
+tar -xvf glibc-2.27.tar.gz
+cd glibc-2.27
+
+
+准备一个编译文件夹
+mkdir build
+cd build
+
+../configure --prefix=/opt/glibc-2.27
+
+------------------------------------------------------
+执行../configure 时候会提示gawk跟bison版本太老，所以需要apt-get install一下
+------------------------------------------------------
+
+make
+make install
+
+
+
+查看 glibc支持的版本
+strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC_
+
+
+请打开至少两个终端并切换到root下
+一个窗口用来操作下面步骤，另一个窗口必须cd /lib64，进入/lib64目录等待操作
+
+1、复制：
+
+cp /opt/glibc-2.27/lib/ld-2.27.so /lib/x86_64-linux-gnu
+
+cp /opt/glibc-2.27/lib/libc-2.27.so /lib/x86_64-linux-gnu
+
+2、执行：cd /lib/x86_64-linux-gnu
+
+进入/lib/x86_64-linux-gnu目录下。
+
+3、执行：unlink ld-linux-x86-64.so.2
+
+来取消软链接。
+
+4、执行命令 ：ln -s ld-2.27.so ld-linux-x86-64.so.2
+
+来将ld-linux-x86-64.so.2链接到ld-2.27.so。
+
+5、执行命令：ll ld-linux-x86-64.so.2
+
+发现ld-linux-x86-64.so.2已成功链接到ld-2.27.so的。
+
+6、执行：unlink libc.so.6
+
+来取消软链接。此时命令开始不能用，提示：No such file or directory。
+
+7、执行：ldconfig -lv libc-2.27.so
+
+来建立libc.so.6 -> libc-2.27.so的软链接。
+
+此时发现命令ls、cp等等出现段错误，或Segmentation fault。
+
+9、切换到我们之前打开的第二个root模式命令行窗口。注意这个窗口必须进入lib64目录。
+
+执行：LD_PRELOAD=/lib/x86_64-linux-gnu/libc-2.27.so unlink /lib64/ld-linux-x86-64.so.2
+
+这个命令是通过原先正常的libc-2.27库，来执行命令，取消/lib64下的/ld-linux-x86-64.so.2的软链接。
+
+10、执行：/lib/x86_64-linux-gnu/ld-2.27.so /bin/ln -s /lib/x86_64-linux-gnu/ld-2.27.so /lib64/ld-linux-x86-64.so.2
+
+把/lib64下的/ld-linux-x86-64.so.2链接到/lib/x86_64-linux-gnu/ld-2.27.so。
+
+11、执行：ll ld-linux-x86-64.so.2
+
+现在发现：ld-linux-x86-64.so.2 -> /lib/x86_64-linux-gnu/ld-2.27.so* 链接成功。
+
+11、执行：strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
+
+查看发现GLIBC已是2.27
+
+
+
+
+
+
