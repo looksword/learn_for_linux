@@ -1,0 +1,13 @@
+
+//ping 带时间
+ping -s 1472 www.baidu.com | awk '{ print strftime("%Y.%m.%d %H:%M:%S",systime())"\t" $0; fflush() }'
+
+//保存开机日志
+dmesg > test.log
+
+//串口测试
+microcom /dev/ttySAC1
+microcom /dev/ttyUSB1
+
+
+
